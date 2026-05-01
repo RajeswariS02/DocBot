@@ -1,0 +1,186 @@
+ocBot — Concepts & Key Components
+
+1. RAG (Retrieval-Augmented Generation)
+--------------------------------------
+RAG is a technique where:
+- Documents are converted into embeddings
+- Relevant chunks are retrieved based on a query
+- The LLM generates answers using retrieved context
+
+Pipeline:
+Documents → Chunking → Embeddings → Vector DB → Retrieval → LLM → Answer
+
+---
+
+2. Document Loading
+-------------------
+Different loaders are used based on file type:
+
+- PDF → PyPDFLoader
+- DOCX → Docx2txtLoader
+- TXT → TextLoader
+- Excel → Pandas
+- Images → Tesseract OCR
+
+Each document is converted into a standardized LangChain Document object with metadata.
+
+---
+
+3. Chunking (Text Splitting)
+----------------------------
+RecursiveCharacterTextSplitter is used to:
+- Break large text into smaller chunks
+- Maintain overlap between chunks
+- Improve retrieval accuracy
+
+Example:
+chunk_size = 500
+chunk_overlap = 100
+
+---
+
+4. Embeddings
+-------------
+Text is converted into vectors using:
+HuggingFaceEmbeddings (all-MiniLM-L6-v2)
+
+Purpose:
+- Capture semantic meaning of text
+- Enable similarity search
+
+---
+
+5. Vector Database (ChromaDB)
+-----------------------------
+- Stores embeddings
+- Enables fast similarity search
+- Persistent storage used
+
+Features:
+- Incremental updates
+- Duplicate prevention
+- Fault recovery handling
+
+---
+
+6. Retrieval
+------------
+Top-k similar chunks are retrieved using:
+
+search_type = "similarity"
+k = 10
+
+These chunks form the context for the LLM.
+
+---
+
+7. LLM (Ollama - Mistral)
+--------------------------
+Used for generating answers.
+
+Configured with:
+- temperature = 0 (deterministic)
+- num_predict = 600
+
+Ensures consistent and grounded responses.
+
+---
+
+8. Conversational Memory
+-------------------------
+ConversationBufferMemory stores chat history.
+
+Used to:
+- Maintain context across questions
+- Improve follow-up question handling
+
+---
+
+9. Prompt Engineering
+---------------------
+Two prompts are used:
+
+1. Condense Question Prompt
+   - Converts follow-up questions into standalone questions
+
+2. Answer Prompt
+   - Forces LLM to:
+     - Use only document context
+     - Avoid hallucination
+     - Return "not found" if needed
+
+---
+
+10. Excel Fast Path (Key Innovation)
+------------------------------------
+Instead of using RAG for Excel:
+
+- Detect structured queries
+- Use Pandas for filtering
+
+Supports:
+- Numeric filters (greater than, less than)
+- Keyword matching
+- Column-based extraction
+
+This improves:
+- Speed
+- Accuracy
+- Reliability
+
+---
+
+11. OCR (Image Processing)
+--------------------------
+Uses Tesseract to extract text from images.
+
+Steps:
+Image → OCR → Text → RAG pipeline
+
+---
+
+12. Streamlit UI
+----------------
+Provides:
+- File upload
+- Chat interface
+- Document preview
+- Settings (chunk size, top-k)
+
+---
+
+13. Performance Optimizations
+-----------------------------
+- LRU caching for embeddings
+- Incremental indexing
+- Deduplication of documents
+- Avoid reprocessing unchanged data
+
+---
+
+14. Error Handling
+------------------
+- Skips unsupported files
+- Handles empty documents
+- Falls back if DB is corrupted
+
+---
+
+15. Two-Layer Architecture
+--------------------------
+Layer 1 → Excel (Structured queries)
+Layer 2 → RAG (Unstructured queries)
+
+This hybrid system improves both:
+- Speed
+- Accuracy
+
+---
+
+Conclusion
+----------
+DocBot is a full end-to-end RAG system with:
+- Multi-format document support
+- Hybrid query engine
+- Local LLM deployment
+- Production-level design patterns
